@@ -16,7 +16,7 @@ try {
 const app = express();
 
 // CORS configuration for cross-origin cookies
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://kingsley-estate-frontend.onrender.com';
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://kingsley-estate-frontend.vercel.app';
 console.log('CORS Origin:', FRONTEND_URL);
 
 // More explicit CORS configuration
@@ -24,9 +24,20 @@ app.use((req, res, next) => {
   console.log('Request origin:', req.headers.origin);
   console.log('Request method:', req.method);
   
+  // Allow requests from Vercel frontend
+  const allowedOrigins = [
+    'https://kingsley-estate-frontend.vercel.app',
+    'http://localhost:3000', // For local development
+    'http://localhost:5173'  // Vite dev server
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
-    res.header('Access-Control-Allow-Origin', FRONTEND_URL);
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Cookie');
     res.header('Access-Control-Allow-Credentials', 'true');
@@ -36,7 +47,6 @@ app.use((req, res, next) => {
   }
   
   // Handle actual requests
-  res.header('Access-Control-Allow-Origin', FRONTEND_URL);
   res.header('Access-Control-Allow-Credentials', 'true');
   res.header('Access-Control-Expose-Headers', 'Set-Cookie');
   
