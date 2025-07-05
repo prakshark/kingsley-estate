@@ -28,6 +28,11 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/estate", estateRoutes);
 
+// API Health Endpoint :-
+app.get((req, res) => {
+    res.json({health: "Backend Working Fine"})
+})
+
 const PORT = process.env.PORT || 3000;
 
 
