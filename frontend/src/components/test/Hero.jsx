@@ -1,6 +1,7 @@
+
 "use client";
-import React from "react";
-import { motion, useScroll, useTransform, useSpring } from "motion/react";
+import React, { useState } from "react";
+import { motion, useScroll, useTransform, useSpring } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -193,53 +194,39 @@ export const Hero = () => {
 const Header = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  
-    const handleExploreClick = async () => {
+
+  const handleExploreClick = async () => {
     if (isLoading) return; // Prevent multiple clicks
-    
+
     setIsLoading(true);
     try {
-      console.log('Hero: Checking authentication before navigation...');
-      console.log('Hero: Using BACKEND_URL:', BACKEND_URL);
-      
       // Check if user is logged in by making a request to the backend
       const response = await axios.get(`${BACKEND_URL}/api/auth/profile`, {
         withCredentials: true,
         timeout: 10000 // 10 second timeout
       });
-      
-      console.log('Hero: Auth response:', response.status, response.data);
+
       if (response.status === 200 && response.data) {
-        console.log('Hero: User is authenticated, navigating to estateDetails');
         navigate('/estateDetails');
         return;
       } else {
-        console.log('Hero: Unexpected response, navigating to login');
         navigate('/login');
       }
     } catch (error) {
-      console.log('Hero: Auth error:', error.response?.status, error.response?.data);
-      console.log('Hero: Error message:', error.message);
-      
-      // Check if it's a network error or authentication error
       if (error.response?.status === 401) {
-        console.log('Hero: User not authenticated (401), navigating to login');
         navigate('/login');
       } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-        console.log('Hero: Request timeout, navigating to login');
         navigate('/login');
       } else if (error.message.includes('Network Error') || error.message.includes('ERR_BLOCKED_BY_CLIENT')) {
-        console.log('Hero: Network error, navigating to login');
         navigate('/login');
       } else {
-        console.log('Hero: Unknown error, navigating to login');
         navigate('/login');
       }
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   return (
     <div className="max-w-7xl relative mx-auto py-16 md:py-32 px-4 w-full left-0 top-0">
       {/* Kingsley Estates Branding */}
@@ -252,7 +239,7 @@ const Header = () => {
           Premium Real Estate Solutions.
         </p>
       </div>
-      
+
       <p className="max-w-3xl text-lg md:text-2xl mt-8 text-gray-300 text-left leading-relaxed">
         Discover exclusive properties in the most desirable locations. <br /><br />
       </p>
