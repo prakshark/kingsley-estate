@@ -1,5 +1,5 @@
 import React from 'react'
-import Hero from '../components/test/hero'
+import Hero from '../components/test/Hero'
 import { FeaturesSectionDemo } from '../components/ui/BentoGrid'
 
 function Home() {
