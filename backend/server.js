@@ -15,11 +15,76 @@ try {
 
 const app = express();
 
+// CORS configuration for credentials
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        const allowedOrigins = [
+            'http://localhost:5173', // Vite dev server
+            'http://localhost:3000', // Alternative local port
+            'http://localhost:4173', // Vite preview server
+            'https://your-frontend-domain.com' // Replace with your actual frontend domain when deployed
+        ];
+        
+        console.log('CORS request from origin:', origin);
+        
+        if (allowedOrigins.indexOf(origin) !== -1) {
+            console.log('CORS allowed for origin:', origin);
+            callback(null, true);
+        } else {
+            console.log('CORS blocked origin:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true, // Allow credentials (cookies)
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cookie', 'X-Requested-With'],
+    exposedHeaders: ['Set-Cookie'],
+    preflightContinue: false,
+    optionsSuccessStatus: 200
+};
+
+// Handle preflight requests
+app.options('*', cors(corsOptions));
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+// Additional CORS headers as backup
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    console.log('Request origin:', origin);
+    console.log('Request method:', req.method);
+    
+    if (origin) {
+        const allowedOrigins = [
+            'http://localhost:5173',
+            'http://localhost:3000',
+            'http://localhost:4173'
+        ];
+        
+        if (allowedOrigins.includes(origin)) {
+            res.header('Access-Control-Allow-Origin', origin);
+            console.log('Set CORS origin to:', origin);
+        }
+    }
+    
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cookie, X-Requested-With');
+    res.header('Access-Control-Expose-Headers', 'Set-Cookie');
+    
+    if (req.method === 'OPTIONS') {
+        res.sendStatus(200);
+    } else {
+        next();
+    }
+});
 
 // Routes
 app.use("/api/auth", authRoutes);
