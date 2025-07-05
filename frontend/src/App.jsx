@@ -9,6 +9,7 @@ import Signup from './pages/Signup'
 import EstateDetails from './pages/EstateDetails'
 import UserProfile from './pages/UserProfile'
 import TestAuth from './components/TestAuth'
+import DebugAuth from './components/DebugAuth'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { Navigation } from './components/Navigation'
 
@@ -42,6 +43,7 @@ export default function App() {
           </ProtectedRoute>
         } />
         <Route path="/test-auth" element={<TestAuth />} />
+        <Route path="/debug-auth" element={<DebugAuth />} />
       </Routes>
     </>
   )
