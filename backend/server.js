@@ -25,26 +25,93 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/estate", estateRoutes);
 
-// API Health Endpoint :-
+// API Health Endpoint with MongoDB status
 app.get("/", (req, res) => {
-    res.json({health: "Backend Working Fine"})
-})
+    const mongoStatus = mongoose.connection.readyState === 1 ? "connected" : "disconnected";
+    res.json({
+        health: "Backend Working Fine",
+        mongodb: mongoStatus,
+        timestamp: new Date().toISOString()
+    });
+});
 
 const PORT = process.env.PORT || 3000;
 
 
-app.listen(PORT, async () => {
-    console.log(`Server is running on port ${PORT}`);
-    
+// MongoDB Connection with better error handling
+const connectDB = async () => {
     try {
         if (!process.env.MONGO_URI) {
-            console.log("MONGO_URI not found in environment variables");
-            return;
+            console.error("MONGO_URI not found in environment variables");
+            process.exit(1);
         }
         
-        await mongoose.connect(process.env.MONGO_URI);
-        console.log("Connected to MongoDB");
+        const conn = await mongoose.connect(process.env.MONGO_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+            socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+            bufferMaxEntries: 0, // Disable mongoose buffering
+            bufferCommands: false, // Disable mongoose buffering
+        });
+        
+        console.log(`MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
-        console.log("MongoDB connection error:", error.message);
+        console.error("MongoDB connection error:", error.message);
+        process.exit(1);
     }
-})
+};
+
+// Handle MongoDB connection events
+mongoose.connection.on('error', (err) => {
+    console.error('MongoDB connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+    console.log('MongoDB disconnected');
+});
+
+mongoose.connection.on('connected', () => {
+    console.log('MongoDB connected');
+});
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+    console.log('Received SIGINT. Closing server and MongoDB connection...');
+    try {
+        await mongoose.connection.close();
+        console.log('MongoDB connection closed.');
+        process.exit(0);
+    } catch (error) {
+        console.error('Error during shutdown:', error);
+        process.exit(1);
+    }
+});
+
+process.on('SIGTERM', async () => {
+    console.log('Received SIGTERM. Closing server and MongoDB connection...');
+    try {
+        await mongoose.connection.close();
+        console.log('MongoDB connection closed.');
+        process.exit(0);
+    } catch (error) {
+        console.error('Error during shutdown:', error);
+        process.exit(1);
+    }
+});
+
+// Start server only after MongoDB connection
+const startServer = async () => {
+    try {
+        await connectDB();
+        
+        app.listen(PORT, () => {
+            console.log(`Server is running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
+};
+
+startServer();

@@ -1,8 +1,16 @@
 import User from "../models/user.model.js";
 import bcrypt from "bcrypt";
+import mongoose from "mongoose";
 
 export async function userSignup(req, res) {
     const {name, email, password} = req.body;
+    
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+        console.error('MongoDB not connected. ReadyState:', mongoose.connection.readyState);
+        return res.status(503).json({message: "Database connection not available"});
+    }
+    
     try {
         const userExists = await User.findOne({email: email});
         if(userExists) {
@@ -37,12 +45,22 @@ export async function userSignup(req, res) {
         });
     } catch (error) {
         console.error('Signup error:', error);
+        if (error.name === 'MongoNetworkError' || error.name === 'MongoTimeoutError') {
+            return res.status(503).json({message: "Database connection error", error: "Please try again later"});
+        }
         return res.status(500).json({message: "Error creating user", error: error.message});
     }
 }
 
 export async function userLogin(req, res) {
     const {email, password} = req.body;
+    
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+        console.error('MongoDB not connected. ReadyState:', mongoose.connection.readyState);
+        return res.status(503).json({message: "Database connection not available"});
+    }
+    
     try {
         const user = await User.findOne({email: email});
         if(!user) {
@@ -64,11 +82,20 @@ export async function userLogin(req, res) {
         return res.status(200).json({message: "Login successful", user: {id: user._id, name: user.name, email: user.email}});
     } catch (error) {
         console.error('Login error:', error);
+        if (error.name === 'MongoNetworkError' || error.name === 'MongoTimeoutError') {
+            return res.status(503).json({message: "Database connection error", error: "Please try again later"});
+        }
         return res.status(500).json({message: "Error logging in", error: error.message});
     }
 }
 
 export async function userProfile(req, res) {
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+        console.error('MongoDB not connected. ReadyState:', mongoose.connection.readyState);
+        return res.status(503).json({message: "Database connection not available"});
+    }
+    
     try {
         const userId = req.cookies.userId;
         if(!userId) {
@@ -82,6 +109,10 @@ export async function userProfile(req, res) {
         
         return res.status(200).json({id: user._id, name: user.name, email: user.email});
     } catch (error) {
+        console.error('Profile error:', error);
+        if (error.name === 'MongoNetworkError' || error.name === 'MongoTimeoutError') {
+            return res.status(503).json({message: "Database connection error", error: "Please try again later"});
+        }
         return res.status(500).json({message: "Error fetching user profile"});
     }
 }
@@ -101,15 +132,29 @@ export async function userLogout(req, res) {
 }
 
 export async function userDelete(req, res) {
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+        console.error('MongoDB not connected. ReadyState:', mongoose.connection.readyState);
+        return res.status(503).json({message: "Database connection not available"});
+    }
+    
     try {
         const userId = req.cookies.userId;
         if(!userId) {
             return res.status(401).json({message: "Not authenticated"});
         }
         await User.findByIdAndDelete(userId);
-        res.clearCookie('userId');
+        res.clearCookie('userId', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+        });
         return res.status(200).json({message: "User deleted successfully"});
     } catch (error) {
+        console.error('Delete user error:', error);
+        if (error.name === 'MongoNetworkError' || error.name === 'MongoTimeoutError') {
+            return res.status(503).json({message: "Database connection error", error: "Please try again later"});
+        }
         return res.status(500).json({message: "Error deleting user"});
     }
 }
