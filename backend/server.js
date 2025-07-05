@@ -16,7 +16,8 @@ try {
 const app = express();
 
 // CORS configuration for cross-origin cookies
-const FRONTEND_URL = process.env.FRONTEND_URL || 'https://your-frontend-url'; // Set this in your .env
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://kingsley-estate-frontend.onrender.com'; // Remove trailing slash
+console.log('CORS Origin:', FRONTEND_URL); // Debug log
 app.use(cors({
   origin: FRONTEND_URL,
   credentials: true,
