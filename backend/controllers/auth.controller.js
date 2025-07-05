@@ -30,8 +30,8 @@ export async function userSignup(req, res) {
         // Set authentication cookie after successful signup
         res.cookie('userId', newUser._id.toString(), {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // Secure in production
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: true, // Secure for cross-origin
+            sameSite: 'none', // Required for cross-origin
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
         
@@ -74,8 +74,8 @@ export async function userLogin(req, res) {
         // Set authentication cookie after successful login
         res.cookie('userId', user._id.toString(), {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production', // Secure in production
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+            secure: true, // Secure for cross-origin
+            sameSite: 'none', // Required for cross-origin
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
         
@@ -90,6 +90,10 @@ export async function userLogin(req, res) {
 }
 
 export async function userProfile(req, res) {
+    console.log('userProfile: Request received');
+    console.log('userProfile: Cookies:', req.cookies);
+    console.log('userProfile: Headers:', req.headers);
+    
     // Check if MongoDB is connected
     if (mongoose.connection.readyState !== 1) {
         console.error('MongoDB not connected. ReadyState:', mongoose.connection.readyState);
@@ -98,15 +102,21 @@ export async function userProfile(req, res) {
     
     try {
         const userId = req.cookies.userId;
+        console.log('userProfile: userId from cookie:', userId);
+        
         if(!userId) {
+            console.log('userProfile: No userId cookie found');
             return res.status(401).json({message: "Not authenticated"});
         }
         
         const user = await User.findById(userId);
+        console.log('userProfile: User found:', user ? 'Yes' : 'No');
+        
         if(!user) {
             return res.status(404).json({message: "User not found"});
         }
         
+        console.log('userProfile: Returning user data');
         return res.status(200).json({id: user._id, name: user.name, email: user.email});
     } catch (error) {
         console.error('Profile error:', error);
@@ -121,8 +131,8 @@ export async function userLogout(req, res) {
     try {
         res.clearCookie('userId', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+            secure: true, // Secure for cross-origin
+            sameSite: 'none' // Required for cross-origin
         });
         return res.status(200).json({message: "Logged out successfully"});
     } catch (error) {
@@ -146,8 +156,8 @@ export async function userDelete(req, res) {
         await User.findByIdAndDelete(userId);
         res.clearCookie('userId', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+            secure: true, // Secure for cross-origin
+            sameSite: 'none' // Required for cross-origin
         });
         return res.status(200).json({message: "User deleted successfully"});
     } catch (error) {

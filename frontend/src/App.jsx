@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import EstateDetails from './pages/EstateDetails'
 import UserProfile from './pages/UserProfile'
+import TestAuth from './components/TestAuth'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { Navigation } from './components/Navigation'
 
@@ -30,7 +31,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/estateDetails/" element={
+        <Route path="/estateDetails" element={
           <ProtectedRoute>
             <EstateDetails />
           </ProtectedRoute>
@@ -40,6 +41,7 @@ export default function App() {
             <UserProfile />
           </ProtectedRoute>
         } />
+        <Route path="/test-auth" element={<TestAuth />} />
       </Routes>
     </>
   )
