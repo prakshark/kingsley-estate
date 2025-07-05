@@ -4,7 +4,7 @@ import axios from 'axios';
 import { QuoteForm } from './ui/QuoteForm';
 import { motion, AnimatePresence } from 'motion/react';
 
-const BACKEND_URL = "http://localhost:3000";
+const BACKEND_URL = "https://kingsley-estate-backend.onrender.com";
 
 export function Navigation() {
   const navigate = useNavigate();

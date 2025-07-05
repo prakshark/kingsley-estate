@@ -49,7 +49,7 @@ import img20 from '../assets/img20.jpg'
 
 function EstateDetails() {
   const [estates, setEstates] = useState([]);
-  const BACKEND_URL = "http://localhost:3000";
+  const BACKEND_URL = "https://kingsley-estate-backend.onrender.com";
 
   useEffect(() => {
     // Create estate objects with detail images and img images

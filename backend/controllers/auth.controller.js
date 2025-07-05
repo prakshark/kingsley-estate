@@ -22,8 +22,8 @@ export async function userSignup(req, res) {
         // Set authentication cookie after successful signup
         res.cookie('userId', newUser._id.toString(), {
             httpOnly: true,
-            secure: false, // Set to false for development
-            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production', // Secure in production
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
         
@@ -36,7 +36,8 @@ export async function userSignup(req, res) {
             }
         });
     } catch (error) {
-        return res.status(500).json({message: "Error creating user"});
+        console.error('Signup error:', error);
+        return res.status(500).json({message: "Error creating user", error: error.message});
     }
 }
 
@@ -55,14 +56,15 @@ export async function userLogin(req, res) {
         // Set authentication cookie after successful login
         res.cookie('userId', user._id.toString(), {
             httpOnly: true,
-            secure: false, // Set to false for development
-            sameSite: 'lax',
+            secure: process.env.NODE_ENV === 'production', // Secure in production
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
         
         return res.status(200).json({message: "Login successful", user: {id: user._id, name: user.name, email: user.email}});
     } catch (error) {
-        return res.status(500).json({message: "Error logging in"});
+        console.error('Login error:', error);
+        return res.status(500).json({message: "Error logging in", error: error.message});
     }
 }
 
@@ -86,9 +88,14 @@ export async function userProfile(req, res) {
 
 export async function userLogout(req, res) {
     try {
-        res.clearCookie('userId');
+        res.clearCookie('userId', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
+        });
         return res.status(200).json({message: "Logged out successfully"});
     } catch (error) {
+        console.error('Logout error:', error);
         return res.status(500).json({message: "Error during logout"});
     }
 }

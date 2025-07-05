@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom'
 
 import SignupLoginPic from '../assets/SignupLoginPic.jpg'
 
-const BACKEND_URL = "http://localhost:3000";
+const BACKEND_URL = "https://kingsley-estate-backend.onrender.com";
 
 function Signup() {
     const navigate = useNavigate();

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 import axios from 'axios';
 
-const BACKEND_URL = "http://localhost:3000";
+const BACKEND_URL = "https://kingsley-estate-backend.onrender.com";
 
 export function ProtectedRoute({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
