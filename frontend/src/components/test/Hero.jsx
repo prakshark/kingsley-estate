@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform, useSpring } from "motion/react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const BACKEND_URL = "http://localhost:3000";
+const BACKEND_URL = "https://kingsley-estate-backend.onrender.com";
 
 // Import all images
 import img1 from '../../assets/img1.jpg'
@@ -192,20 +192,51 @@ export const Hero = () => {
 
 const Header = () => {
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
   
-  const handleExploreClick = async () => {
+    const handleExploreClick = async () => {
+    if (isLoading) return; // Prevent multiple clicks
+    
+    setIsLoading(true);
     try {
+      console.log('Hero: Checking authentication before navigation...');
+      console.log('Hero: Using BACKEND_URL:', BACKEND_URL);
+      
       // Check if user is logged in by making a request to the backend
       const response = await axios.get(`${BACKEND_URL}/api/auth/profile`, {
-        withCredentials: true
+        withCredentials: true,
+        timeout: 10000 // 10 second timeout
       });
       
-      if (response.status === 200) {
-        navigate('/estateDetails/');
+      console.log('Hero: Auth response:', response.status, response.data);
+      if (response.status === 200 && response.data) {
+        console.log('Hero: User is authenticated, navigating to estateDetails');
+        navigate('/estateDetails');
+        return;
+      } else {
+        console.log('Hero: Unexpected response, navigating to login');
+        navigate('/login');
       }
     } catch (error) {
-      // If we get a 401, user is not authenticated
-      navigate('/login');
+      console.log('Hero: Auth error:', error.response?.status, error.response?.data);
+      console.log('Hero: Error message:', error.message);
+      
+      // Check if it's a network error or authentication error
+      if (error.response?.status === 401) {
+        console.log('Hero: User not authenticated (401), navigating to login');
+        navigate('/login');
+      } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        console.log('Hero: Request timeout, navigating to login');
+        navigate('/login');
+      } else if (error.message.includes('Network Error') || error.message.includes('ERR_BLOCKED_BY_CLIENT')) {
+        console.log('Hero: Network error, navigating to login');
+        navigate('/login');
+      } else {
+        console.log('Hero: Unknown error, navigating to login');
+        navigate('/login');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -228,23 +259,35 @@ const Header = () => {
 
       <motion.button
         onClick={handleExploreClick}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="relative z-10 mt-8 bg-transparent hover:bg-yellow-500/10 text-yellow-400 hover:text-yellow-300 font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform border-2 border-yellow-400 hover:border-yellow-300 inline-block cursor-pointer"
+        disabled={isLoading}
+        whileHover={!isLoading ? { scale: 1.05 } : {}}
+        whileTap={!isLoading ? { scale: 0.95 } : {}}
+        className={`relative z-10 mt-8 font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform border-2 inline-block cursor-pointer ${
+          isLoading 
+            ? 'bg-yellow-500/20 text-yellow-300 border-yellow-300/50 cursor-not-allowed' 
+            : 'bg-transparent hover:bg-yellow-500/10 text-yellow-400 hover:text-yellow-300 border-yellow-400 hover:border-yellow-300'
+        }`}
       >
-        <motion.div
-          animate={{ x: [0, 5, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="flex items-center space-x-2"
-        >
-          <span>Explore our premium listings here.</span>
-          <motion.span
-            animate={{ x: [0, 3, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+        {isLoading ? (
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+            <span>Checking authentication...</span>
+          </div>
+        ) : (
+          <motion.div
+            animate={{ x: [0, 5, 0] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="flex items-center space-x-2"
           >
-            →
-          </motion.span>
-        </motion.div>
+            <span>Explore our premium listings here.</span>
+            <motion.span
+              animate={{ x: [0, 3, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            >
+              →
+            </motion.span>
+          </motion.div>
+        )}
       </motion.button>
       <br /><br /><br />
 
