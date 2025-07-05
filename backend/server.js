@@ -30,7 +30,7 @@ app.use("/api/estate", estateRoutes);
 
 // API Health Endpoint :-
 app.get((req, res) => {
-    res.json({health: "Backend Working Fine"})
+    res.send(<h1>API Working Fine</h1>)
 })
 
 const PORT = process.env.PORT || 3000;
