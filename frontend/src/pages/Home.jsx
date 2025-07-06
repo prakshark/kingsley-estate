@@ -1,12 +1,195 @@
-import React from 'react'
-import Hero from '../components/test/Hero'
-import { FeaturesSectionDemo } from '../components/ui/BentoGrid'
+import React, { useState } from 'react'
+import MasonryTest from '../components/test/MasonryTest'
+import GalleryTest from '../components/test/GalleryTest'
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const BACKEND_URL = "https://kingsley-estate-backend.onrender.com";
 
 function Home() {
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleExploreClick = async () => {
+    if (isLoading) return; // Prevent multiple clicks
+
+    setIsLoading(true);
+    try {
+      // Check if user is logged in by making a request to the backend
+      const response = await axios.get(`${BACKEND_URL}/api/auth/profile`, {
+        withCredentials: true,
+        timeout: 10000 // 10 second timeout
+      });
+
+      if (response.status === 200 && response.data) {
+        navigate('/estateDetails');
+        return;
+      } else {
+        navigate('/login');
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        navigate('/login');
+      } else if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+        navigate('/login');
+      } else if (error.message.includes('Network Error') || error.message.includes('ERR_BLOCKED_BY_CLIENT')) {
+        navigate('/login');
+      } else {
+        navigate('/login');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="bg-black min-h-screen pt-20">
-      <Hero />
-      <FeaturesSectionDemo />
+      {/* Hero Section with MasonryTest as background */}
+      <div className="relative h-screen overflow-hidden">
+        {/* MasonryTest as background */}
+        <div className="absolute inset-0 z-0">
+          <MasonryTest />
+        </div>
+        
+        {/* Dark overlay for better text visibility */}
+        <div className="absolute inset-0 z-5 bg-black/80"></div>
+        
+        {/* Text overlay */}
+        <div className="relative z-10 h-full flex items-center">
+          <div className="max-w-7xl relative mx-auto py-16 md:py-32 px-4 w-full left-0 top-0">
+            {/* Kingsley Estates Branding */}
+            <div className="text-left mb-12">
+              <h1 className="text-4xl md:text-8xl font-extrabold bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 bg-clip-text text-transparent mb-4 tracking-wider drop-shadow-2xl">
+                KINGSLEY ESTATES.
+              </h1>
+              <div className="w-32 h-1 bg-gradient-to-r from-yellow-300 to-yellow-500 mx-0 mb-6 rounded-full shadow-lg"></div>
+              <p className="text-yellow-200 text-lg md:text-xl font-semibold uppercase tracking-widest drop-shadow-lg">
+                Premium Real Estate Solutions.
+              </p>
+            </div>
+
+            <p className="max-w-3xl text-lg md:text-2xl mt-8 text-gray-100 text-left leading-relaxed drop-shadow-lg font-medium">
+              Discover exclusive properties in the most desirable locations. <br /><br />
+            </p>
+
+            <motion.button
+              onClick={handleExploreClick}
+              disabled={isLoading}
+              whileHover={!isLoading ? { scale: 1.05 } : {}}
+              whileTap={!isLoading ? { scale: 0.95 } : {}}
+              className={`relative z-10 mt-8 font-semibold py-3 px-6 rounded-lg transition-all duration-300 transform border-2 inline-block cursor-pointer ${
+                isLoading 
+                  ? 'bg-yellow-500/20 text-yellow-300 border-yellow-300/50 cursor-not-allowed' 
+                  : 'bg-transparent hover:bg-yellow-500/10 text-yellow-400 hover:text-yellow-300 border-yellow-400 hover:border-yellow-300'
+              }`}
+            >
+              {isLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="w-4 h-4 border-2 border-yellow-400 border-t-transparent rounded-full animate-spin"></div>
+                  <span>Checking authentication...</span>
+                </div>
+              ) : (
+                <motion.div
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  className="flex items-center space-x-2"
+                >
+                  <span>Explore our premium listings here.</span>
+                  <motion.span
+                    animate={{ x: [0, 3, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    →
+                  </motion.span>
+                </motion.div>
+              )}
+            </motion.button>
+            <br /><br /><br />
+
+            <motion.div 
+              className="flex justify-center mt-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1, duration: 0.8 }}
+            >
+              <motion.div
+                className="w-12 h-12 rounded-full bg-yellow-400/20 border-2 border-yellow-400/50 flex items-center justify-center cursor-pointer hover:bg-yellow-400/30 transition-colors"
+                animate={{ 
+                  y: [0, -8, 0],
+                  scale: [1, 1.1, 1]
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+                whileHover={{ 
+                  scale: 1.2,
+                  backgroundColor: "rgba(250, 204, 21, 0.3)"
+                }}
+              >
+                <motion.svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  className="text-yellow-400"
+                  animate={{ 
+                    y: [0, 2, 0]
+                  }}
+                  transition={{ 
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <path
+                    d="M7 10l5 5 5-5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </motion.svg>
+              </motion.div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Curated Luxury Living Section */}
+      <div className="relative z-20 py-16 md:py-24 bg-black">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <motion.h2 
+            className="text-3xl md:text-5xl lg:text-6xl font-extrabold bg-gradient-to-r from-yellow-300 via-yellow-400 to-yellow-500 bg-clip-text text-transparent mb-6 tracking-wider"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ once: true }}
+          >
+            CURATED LUXURY LIVING
+          </motion.h2>
+          <motion.div 
+            className="w-24 h-1 bg-gradient-to-r from-yellow-400 to-yellow-600 mx-auto mb-8 rounded-full"
+            initial={{ opacity: 0, scaleX: 0 }}
+            whileInView={{ opacity: 1, scaleX: 1 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+            viewport={{ once: true }}
+          />
+          <motion.p 
+            className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+            viewport={{ once: true }}
+          >
+            Discover our handpicked collection of premium properties, each carefully selected to embody the pinnacle of sophisticated living.
+          </motion.p>
+        </div>
+      </div>
+      
+      <GalleryTest />
       <Footer />
     </div>
   )
