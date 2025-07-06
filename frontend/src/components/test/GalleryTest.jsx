@@ -7,11 +7,11 @@ const GalleryTest = () => {
   return (
     <div style={{ height: '600px', position: 'relative' }}>
       <CircularGallery 
-        bend={isMobile ? 1.5 : 2} 
+        bend={isMobile ? 1 : 5} 
         textColor={isMobile ? "transparent" : "#ffffff"} 
         borderRadius={0.05} 
         scrollEase={isMobile ? 0.005 : 0.01}
-        scrollSpeed={isMobile ? 0.5 : 1}
+        scrollSpeed={isMobile? 0.5 : 1}
       />
     </div>
   );
